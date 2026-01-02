@@ -66,8 +66,8 @@ export function QuizQuestion({
             <label
               key={option.value}
               className={`flex items-start gap-4 p-4 rounded-lg border-2 cursor-pointer transition-all ${selectedAnswer === option.value
-                  ? 'border-brand-mint bg-brand-mint/5 dark:bg-brand-mint/10'
-                  : 'border-brand-gray dark:border-zinc-800 hover:border-brand-purple/50 bg-white dark:bg-brand-black'
+                ? 'border-brand-mint bg-brand-mint/5 dark:bg-brand-mint/10'
+                : 'border-brand-gray dark:border-zinc-800 hover:border-brand-purple/50 bg-white dark:bg-brand-black'
                 }`}
             >
               <input
@@ -103,8 +103,8 @@ export function QuizQuestion({
       {showConfirmModal && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
           <Card className="max-w-md w-full fade-in">
-            <h3 className="text-xl font-bold text-zinc-900 mb-3">Confirm Submission</h3>
-            <p className="text-zinc-600 mb-6">
+            <h3 className="text-xl font-bold text-zinc-50 mb-3">Confirm Submission</h3>
+            <p className="text-zinc-50 mb-6">
               Are you sure you want to submit your quiz? You cannot change your answers after
               submission.
             </p>

@@ -56,8 +56,8 @@ export function QuizInterface({ quiz, questions, onComplete }: QuizInterfaceProp
   if (!currentQuestion) return null;
 
   return (
-    <div className="min-h-screen bg-zinc-50 flex flex-col">
-      <div className="bg-white border-b border-zinc-200 sticky top-0 z-10">
+    <div className="min-h-screen bg-zinc-50 dark:bg-brand-obsidian flex flex-col">
+      <div className="bg-white border-b border-zinc-200 sticky top-0 z-10 dark:bg-brand-obsidian">
         <div className="container py-4">
           <div className="flex items-center justify-between mb-4">
             <QuizProgress current={currentQuestionIndex + 1} total={questions.length} />
@@ -66,7 +66,7 @@ export function QuizInterface({ quiz, questions, onComplete }: QuizInterfaceProp
         </div>
       </div>
 
-      <div className="flex-1 container py-8">
+      <div className="flex-1 container py-8 dark:bg-brand-obsidian">
         <QuizQuestion
           question={currentQuestion}
           questionNumber={currentQuestionIndex + 1}
