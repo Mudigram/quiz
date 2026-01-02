@@ -15,7 +15,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Weekly Quiz Challenge",
+  title: "Ritual Weekly Quiz Challenge",
   description: "Learn about blockchain ecosystems through competitive weekly quizzes",
 };
 

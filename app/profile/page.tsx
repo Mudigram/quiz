@@ -7,13 +7,31 @@ import { Avatar } from '@/components/ui/Avatar';
 import { Card } from '@/components/ui/Card';
 import { Badge } from '@/components/ui/Badge';
 import { Trophy, Clock, Target, TrendingUp } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import { useEffect } from 'react';
 
 export default function ProfilePage() {
-    const { user } = useAuth();
+    const router = useRouter();
+    const { user, loading } = useAuth();
     const { data: previousAttempts = [] } = usePreviousAttempts(user?.id);
 
-    if (!user) {
-        return null;
+    // Redirect to home if not authenticated
+    useEffect(() => {
+        if (!loading && !user) {
+            router.push('/');
+        }
+    }, [user, loading, router]);
+
+    // Show loading while checking auth
+    if (loading || !user) {
+        return (
+            <div className="min-h-screen flex items-center justify-center bg-zinc-50 dark:bg-brand-obsidian">
+                <div className="text-center">
+                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-brand-mint mx-auto mb-4"></div>
+                    <p className="text-brand-black/60 dark:text-brand-white/60">Loading...</p>
+                </div>
+            </div>
+        );
     }
 
     // Calculate stats

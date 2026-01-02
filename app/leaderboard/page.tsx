@@ -4,11 +4,33 @@ import { useAuth } from '@/lib/auth-context';
 import { useActiveQuiz, useLeaderboard } from '@/lib/api-hooks';
 import { Header } from '@/components/Header';
 import { LeaderboardTable } from '@/components/leaderboard/LeaderboardTable';
+import { useRouter } from 'next/navigation';
+import { useEffect } from 'react';
 
 export default function LeaderboardPage() {
-    const { user } = useAuth();
+    const router = useRouter();
+    const { user, loading } = useAuth();
     const { data: activeQuiz } = useActiveQuiz();
     const { data: leaderboard = [], isLoading } = useLeaderboard(activeQuiz?.id);
+
+    // Redirect to home if not authenticated
+    useEffect(() => {
+        if (!loading && !user) {
+            router.push('/');
+        }
+    }, [user, loading, router]);
+
+    // Show loading while checking auth
+    if (loading || !user) {
+        return (
+            <div className="min-h-screen flex items-center justify-center bg-zinc-50 dark:bg-brand-obsidian">
+                <div className="text-center">
+                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-brand-mint mx-auto mb-4"></div>
+                    <p className="text-brand-black/60 dark:text-brand-white/60">Loading...</p>
+                </div>
+            </div>
+        );
+    }
 
     if (isLoading) {
         return (
@@ -45,7 +67,7 @@ export default function LeaderboardPage() {
                             </p>
                         </div>
                     ) : (
-                        user && <LeaderboardTable entries={leaderboard} currentUserId={user.id} />
+                        <LeaderboardTable entries={leaderboard} currentUserId={user.id} />
                     )}
                 </div>
             </main>
