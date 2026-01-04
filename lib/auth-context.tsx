@@ -71,11 +71,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
-  const createUserProfile = async (userId: string) => {
+  const createUserProfile = async (userId: string, retries = 3) => {
     try {
       // Get current auth user data
       const { data: { user: authUser } } = await supabase.auth.getUser();
-      
+
       if (!authUser) {
         console.error('No auth user found');
         setLoading(false);
@@ -88,15 +88,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
       // Discord sends data in different fields depending on the OAuth flow
       const discordId = discordData.provider_id || identityData?.provider_id || authUser.id;
-      const username = discordData.full_name || 
-                       discordData.name || 
-                       discordData.custom_claims?.global_name ||
-                       identityData?.full_name ||
-                       identityData?.global_name ||
-                       'Discord User';
-      const avatarUrl = discordData.avatar_url || 
-                        identityData?.avatar_url ||
-                        `https://cdn.discordapp.com/embed/avatars/${Math.floor(Math.random() * 5)}.png`;
+      const username = discordData.full_name ||
+        discordData.name ||
+        discordData.custom_claims?.global_name ||
+        identityData?.full_name ||
+        identityData?.global_name ||
+        'Discord User';
+      const avatarUrl = discordData.avatar_url ||
+        identityData?.avatar_url ||
+        `https://cdn.discordapp.com/embed/avatars/${Math.floor(Math.random() * 5)}.png`;
 
       console.log('Creating user profile with:', { discordId, username, avatarUrl });
 
@@ -113,16 +113,25 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         .single();
 
       if (error) {
-        console.error('Error creating user profile:', error);
         throw error;
       }
 
       console.log('User profile created successfully:', newUser);
       setUser(newUser);
     } catch (error) {
-      console.error('Error in createUserProfile:', error);
+      console.error(`Error in createUserProfile (attempt ${4 - retries}/3):`, error);
+
+      if (retries > 0) {
+        console.log(`Retrying user creation in 1s... (${retries} retries left)`);
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        await createUserProfile(userId, retries - 1);
+      } else {
+        setLoading(false);
+      }
     } finally {
-      setLoading(false);
+      if (retries === 0) {
+        setLoading(false);
+      }
     }
   };
 
@@ -130,7 +139,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const { error } = await supabase.auth.signInWithOAuth({
       provider: 'discord',
       options: {
-        redirectTo: `${window.location.origin}`,
+        redirectTo: `${window.location.origin}/profile`,
       },
     });
     if (error) {
