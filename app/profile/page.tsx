@@ -6,14 +6,23 @@ import { Header } from '@/components/Header';
 import { Avatar } from '@/components/ui/Avatar';
 import { Card } from '@/components/ui/Card';
 import { Badge } from '@/components/ui/Badge';
-import { Trophy, Clock, Target, TrendingUp } from 'lucide-react';
+import { Trophy, Clock, Target, TrendingUp, Moon, Sun } from 'lucide-react';
 import { useRouter } from 'next/navigation';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
+import { useTheme } from 'next-themes';
 
 export default function ProfilePage() {
     const router = useRouter();
     const { user, loading } = useAuth();
     const { data: previousAttempts = [] } = usePreviousAttempts(user?.id);
+
+    const { theme, setTheme } = useTheme();
+    const [mounted, setMounted] = useState(false);
+
+    // Prevent hydration mismatch
+    useEffect(() => {
+        setMounted(true);
+    }, []);
 
     // Redirect to home if not authenticated
     useEffect(() => {
@@ -95,6 +104,49 @@ export default function ProfilePage() {
                                 </div>
                             </Card>
                         ))}
+                    </div>
+
+                    {/* Quick Actions */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <Card
+                            className="cursor-pointer hover:border-brand-mint transition-colors group slide-up"
+                            onClick={() => router.push('/history')}
+                        >
+                            <div className="flex items-center gap-4">
+                                <div className="w-10 h-10 rounded-full bg-brand-black/5 dark:bg-brand-white/10 flex items-center justify-center group-hover:bg-brand-mint group-hover:text-brand-black transition-colors">
+                                    <Clock className="w-5 h-5" />
+                                </div>
+                                <div>
+                                    <h3 className="text-lg font-bold text-brand-black dark:text-brand-white">View History</h3>
+                                    <p className="text-sm text-brand-black/60 dark:text-brand-white/60">Check past quiz attempts</p>
+                                </div>
+                            </div>
+                        </Card>
+
+                        {/* Theme Toggle */}
+                        {mounted && (
+                            <Card className="slide-up">
+                                <div className="flex items-center justify-between">
+                                    <div className="flex items-center gap-4">
+                                        <div className="w-10 h-10 rounded-full bg-brand-black/5 dark:bg-brand-white/10 flex items-center justify-center">
+                                            {theme === 'dark' ? <Moon className="w-5 h-5" /> : <Sun className="w-5 h-5" />}
+                                        </div>
+                                        <div>
+                                            <h3 className="text-lg font-bold text-brand-black dark:text-brand-white">Appearance</h3>
+                                            <p className="text-sm text-brand-black/60 dark:text-brand-white/60">
+                                                {theme === 'dark' ? 'Dark Mode' : 'Light Mode'}
+                                            </p>
+                                        </div>
+                                    </div>
+                                    <button
+                                        onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
+                                        className="px-4 py-2 rounded-full bg-brand-black/5 dark:bg-brand-white/10 font-bold uppercase text-xs hover:bg-brand-mint hover:text-brand-black transition-colors"
+                                    >
+                                        Toggle
+                                    </button>
+                                </div>
+                            </Card>
+                        )}
                     </div>
 
                     {/* Achievement Section (Placeholder) */}

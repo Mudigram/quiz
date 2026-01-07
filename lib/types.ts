@@ -60,7 +60,7 @@ export interface LeaderboardEntry {
 export type QuizStatus = 'active' | 'completed' | 'upcoming';
 export type AttemptStatus = 'in_progress' | 'submitted';
 export type QuestionType = 'multiple_choice';
-export type RankBadge = 'gold' | 'silver' | 'bronze' | 'default';
+export type RankBadge = 'gold' | 'silver' | 'bronze' | 'default' | 'mint' | 'outline';
 
 // UI State
 export interface QuizState {

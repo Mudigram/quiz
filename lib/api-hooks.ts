@@ -5,6 +5,23 @@ import { supabase } from './supabase';
 import { Quiz, Question, QuizAttempt, LeaderboardEntry, PastAttempt } from './types';
 import { calculateScore, getCorrectAnswersCount } from './utils';
 
+
+// Fetch all quizzes
+export const useQuizzes = () => {
+  return useQuery<Quiz[]>({
+    queryKey: ['quizzes'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('quizzes')
+        .select('*')
+        .order('week_start_date', { ascending: false });
+
+      if (error) throw error;
+      return data;
+    },
+  });
+};
+
 // Fetch current week's active quiz
 export const useActiveQuiz = () => {
   return useQuery<Quiz | null>({
@@ -31,7 +48,7 @@ export const useQuizQuestions = (quizId: string | undefined) => {
     queryKey: ['quizQuestions', quizId],
     queryFn: async () => {
       if (!quizId) throw new Error('Quiz ID is required');
-      
+
       const { data, error } = await supabase
         .from('questions')
         .select('*')
