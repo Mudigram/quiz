@@ -4,9 +4,12 @@ import { LogOut } from 'lucide-react';
 import { Avatar } from './ui/Avatar';
 import { Button } from './ui/Button';
 import { useAuth } from '@/lib/auth-context';
+import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 
 export function Header() {
   const { user, signOut } = useAuth();
+  const pathname = usePathname();
 
   if (!user) return null;
 
@@ -26,6 +29,40 @@ export function Header() {
             <h1 className="text-xl font-black text-brand-black dark:text-brand-white tracking-tighter uppercase italic">
               Weekly Quiz <span className="text-brand-purple">Challenge</span>
             </h1>
+
+            {/* Desktop Navigation */}
+            <nav className="hidden lg:flex items-center gap-6 ml-8">
+              <Link
+                href="/"
+                className={`text-sm font-bold uppercase tracking-tight hover:text-brand-purple transition-colors ${pathname === '/' ? 'text-brand-mint' : 'text-brand-black/60 dark:text-brand-white/60'}`}
+              >
+                Home
+              </Link>
+              <Link
+                href="/quiz"
+                className={`text-sm font-bold uppercase tracking-tight hover:text-brand-purple transition-colors ${pathname === '/quiz' ? 'text-brand-mint' : 'text-brand-black/60 dark:text-brand-white/60'}`}
+              >
+                Quiz
+              </Link>
+              <Link
+                href="/resources"
+                className={`text-sm font-bold uppercase tracking-tight hover:text-brand-purple transition-colors ${pathname === '/resources' ? 'text-brand-mint' : 'text-brand-black/60 dark:text-brand-white/60'}`}
+              >
+                Learn
+              </Link>
+              <Link
+                href="/leaderboard"
+                className={`text-sm font-bold uppercase tracking-tight hover:text-brand-purple transition-colors ${pathname === '/leaderboard' ? 'text-brand-mint' : 'text-brand-black/60 dark:text-brand-white/60'}`}
+              >
+                Ranks
+              </Link>
+              <Link
+                href="/history"
+                className={`text-sm font-bold uppercase tracking-tight hover:text-brand-purple transition-colors ${pathname === '/history' ? 'text-brand-mint' : 'text-brand-black/60 dark:text-brand-white/60'}`}
+              >
+                History
+              </Link>
+            </nav>
           </div>
 
           <div className="flex items-center gap-4">
