@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { Question, Quiz } from '@/lib/types';
 import { useQuizStore } from '@/lib/quiz-store';
 import { Timer } from '../Timer';
@@ -22,6 +22,7 @@ export function QuizInterface({ quiz, questions, onComplete }: QuizInterfaceProp
     startQuiz,
     updateTimeRemaining,
   } = useQuizStore();
+  const isSubmitting = useRef(false);
 
   useEffect(() => {
     if (!startTime) {
@@ -31,7 +32,8 @@ export function QuizInterface({ quiz, questions, onComplete }: QuizInterfaceProp
 
   useEffect(() => {
     if (!startTime || timeRemaining <= 0) {
-      if (timeRemaining <= 0 && startTime) {
+      if (timeRemaining <= 0 && startTime && !isSubmitting.current) {
+        isSubmitting.current = true;
         const timeTaken = Math.floor((Date.now() - startTime) / 1000);
         onComplete(answers, timeTaken);
       }

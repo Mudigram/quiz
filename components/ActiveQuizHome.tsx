@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { Header } from './Header';
 import { QuizCard } from './dashboard/QuizCard';
@@ -32,7 +32,7 @@ export function ActiveQuizHome() {
         setViewState('quiz');
     };
 
-    const handleQuizComplete = async (answers: Record<string, string>, timeTaken: number) => {
+    const handleQuizComplete = useCallback(async (answers: Record<string, string>, timeTaken: number) => {
         if (!user || !activeQuiz) return;
 
         try {
@@ -50,7 +50,7 @@ export function ActiveQuizHome() {
             console.error('Error submitting quiz:', error);
             alert('Failed to submit quiz. Please try again.');
         }
-    };
+    }, [user, activeQuiz, submitQuiz, questions, router, resetQuiz]);
 
     if (quizLoading) {
         return (
