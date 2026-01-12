@@ -28,10 +28,10 @@ export function LeaderboardTable({ entries, currentUserId }: LeaderboardTablePro
               <div className="mb-3">
                 <Trophy
                   className={`w-8 h-8 mx-auto ${entry.rank === 1
-                      ? 'text-brand-magenta'
-                      : entry.rank === 2
-                        ? 'text-brand-purple'
-                        : 'text-brand-blue'
+                    ? 'text-brand-magenta'
+                    : entry.rank === 2
+                      ? 'text-brand-purple'
+                      : 'text-brand-blue'
                     }`}
                 />
               </div>
@@ -68,12 +68,12 @@ export function LeaderboardTable({ entries, currentUserId }: LeaderboardTablePro
                   }`}
               >
                 <div className="w-12 text-center">
-                  <span className="font-semibold text-zinc-900">{entry.rank}</span>
+                  <span className="font-semibold text-brand-green">{entry.rank}</span>
                 </div>
                 <Avatar src={entry.discord_avatar_url} alt={entry.discord_username} size="sm" />
                 <div className="flex-1">
-                  <div className="font-medium text-zinc-900">{entry.discord_username}</div>
-                  <div className="text-sm text-zinc-600">
+                  <div className="font-medium text-brand-black dark:text-brand-white">{entry.discord_username}</div>
+                  <div className="text-sm text-brand-black/60 dark:text-brand-white/60">
                     {entry.correct_answers} correct • {formatTimeRemaining(entry.time_taken_seconds)}
                   </div>
                 </div>
