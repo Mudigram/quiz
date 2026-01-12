@@ -62,7 +62,7 @@ export default function QuizListPage() {
                                         <QuizCard
                                             quiz={quiz}
                                             attempt={attempt || null}
-                                            questionCount={10} // Ideally we'd know this from the quiz object or query
+                                            questionCount={quiz.questions.length}
                                             onStartQuiz={handleStartQuiz}
                                         />
                                     </div>

@@ -12,6 +12,7 @@ export interface Quiz {
   id: string;
   title: string;
   description: string;
+  questions: Question[];
   week_start_date: string;
   week_end_date: string;
   max_time_seconds: number; // Always 300 (5 minutes)

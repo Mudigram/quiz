@@ -13,7 +13,7 @@ export const useQuizzes = () => {
     queryFn: async () => {
       const { data, error } = await supabase
         .from('quizzes')
-        .select('*')
+        .select('*, questions(*)')
         .order('week_start_date', { ascending: false });
 
       if (error) throw error;
@@ -29,7 +29,7 @@ export const useActiveQuiz = () => {
     queryFn: async () => {
       const { data, error } = await supabase
         .from('quizzes')
-        .select('*')
+        .select('*, questions(*)')
         .eq('is_active', true)
         .single();
 
