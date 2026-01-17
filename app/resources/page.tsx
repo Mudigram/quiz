@@ -4,6 +4,7 @@ import { Header } from '@/components/Header';
 import { Card } from '@/components/ui/Card';
 import { Badge } from '@/components/ui/Badge';
 import { BookOpen, Video, FileText, ExternalLink } from 'lucide-react';
+import { LearningResources } from '@/components/home/LearningResources';
 import Link from 'next/link';
 
 // Dummy data for resources
@@ -70,38 +71,42 @@ export default function ResourcesPage() {
                             const Icon = typeIcons[resource.type as keyof typeof typeIcons] || FileText;
 
                             return (
-                                <Link href={resource.url} key={resource.id} className="block group">
-                                    <Card className={`h-full transition-all duration-300 hover:shadow-lg hover:-translate-y-1 ${resource.featured ? 'border-brand-mint/50 dark:border-brand-mint/30' : ''}`}>
-                                        <div className="flex flex-col h-full">
-                                            <div className="flex justify-between items-start mb-4">
-                                                <Badge variant={resource.featured ? 'mint' : 'outline'} className="uppercase text-xs">
-                                                    {resource.type}
-                                                </Badge>
-                                                {resource.featured && (
-                                                    <Badge variant="gold" className="uppercase text-xs">
-                                                        Featured
+
+                                <div>
+                                    <LearningResources />
+                                    <Link href={resource.url} key={resource.id} className="block group">
+                                        <Card className={`h-full transition-all duration-300 hover:shadow-lg hover:-translate-y-1 ${resource.featured ? 'border-brand-mint/50 dark:border-brand-mint/30' : ''}`}>
+                                            <div className="flex flex-col h-full">
+                                                <div className="flex justify-between items-start mb-4">
+                                                    <Badge variant={resource.featured ? 'mint' : 'outline'} className="uppercase text-xs">
+                                                        {resource.type}
                                                     </Badge>
-                                                )}
-                                            </div>
-
-                                            <h3 className="text-xl font-bold text-brand-black dark:text-brand-white mb-2 group-hover:text-brand-purple transition-colors">
-                                                {resource.title}
-                                            </h3>
-
-                                            <p className="text-brand-black/60 dark:text-brand-white/60 text-sm mb-6 flex-1">
-                                                {resource.description}
-                                            </p>
-
-                                            <div className="flex items-center justify-between pt-4 border-t border-brand-black/5 dark:border-brand-white/5 mt-auto">
-                                                <div className="flex items-center gap-2 text-xs font-bold uppercase text-brand-black/40 dark:text-brand-white/40">
-                                                    <Icon className="w-4 h-4" />
-                                                    <span>{resource.duration}</span>
+                                                    {resource.featured && (
+                                                        <Badge variant="gold" className="uppercase text-xs">
+                                                            Featured
+                                                        </Badge>
+                                                    )}
                                                 </div>
-                                                <ExternalLink className="w-4 h-4 text-brand-black/40 dark:text-brand-white/40 group-hover:text-brand-purple transition-colors" />
+
+                                                <h3 className="text-xl font-bold text-brand-black dark:text-brand-white mb-2 group-hover:text-brand-purple transition-colors">
+                                                    {resource.title}
+                                                </h3>
+
+                                                <p className="text-brand-black/60 dark:text-brand-white/60 text-sm mb-6 flex-1">
+                                                    {resource.description}
+                                                </p>
+
+                                                <div className="flex items-center justify-between pt-4 border-t border-brand-black/5 dark:border-brand-white/5 mt-auto">
+                                                    <div className="flex items-center gap-2 text-xs font-bold uppercase text-brand-black/40 dark:text-brand-white/40">
+                                                        <Icon className="w-4 h-4" />
+                                                        <span>{resource.duration}</span>
+                                                    </div>
+                                                    <ExternalLink className="w-4 h-4 text-brand-black/40 dark:text-brand-white/40 group-hover:text-brand-purple transition-colors" />
+                                                </div>
                                             </div>
-                                        </div>
-                                    </Card>
-                                </Link>
+                                        </Card>
+                                    </Link>
+                                </div>
                             );
                         })}
                     </div>
