@@ -2,24 +2,26 @@ import { ButtonHTMLAttributes, ReactNode } from 'react';
 import { cn } from '@/lib/utils';
 
 interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
-  variant?: 'primary' | 'secondary' | 'discord';
+  variant?: 'primary' | 'secondary' | 'discord' | 'ghost' | 'outline';
   children: ReactNode;
   isLoading?: boolean;
 }
 
-export function Button({ 
-  variant = 'primary', 
-  children, 
+export function Button({
+  variant = 'primary',
+  children,
   isLoading = false,
   className,
   disabled,
-  ...props 
+  ...props
 }: ButtonProps) {
   const baseClasses = 'btn';
   const variantClasses = {
     primary: 'btn-primary',
     secondary: 'btn-secondary',
     discord: 'btn-discord',
+    ghost: 'btn-ghost',
+    outline: 'btn-outline',
   };
 
   return (

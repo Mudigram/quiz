@@ -1,18 +1,78 @@
 'use client';
 
 import { SiDiscord } from 'react-icons/si';
-import { Users, Trophy, Target } from 'lucide-react';
+import { Users, Trophy, Target, Check, X } from 'lucide-react';
 import { Button } from '../ui/Button';
 import { useAuth } from '@/lib/auth-context';
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import { ritualConfig } from '@/config/ritual';
 import Image from 'next/image';
+import debounce from 'lodash/debounce';
 
 export function LoginScreen() {
-  const { signInWithDiscord } = useAuth();
+  const { signInWithDiscord, signInWithUsername, signUpWithUsername, checkUsernameAvailability } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
+  const [mode, setMode] = useState<'login' | 'register'>('login');
 
-  const handleSignIn = async () => {
+  // Form State
+  const [username, setUsername] = useState('');
+  const [password, setPassword] = useState('');
+  const [error, setError] = useState('');
+
+  // Registration specific state
+  const [isUsernameAvailable, setIsUsernameAvailable] = useState<boolean | null>(null);
+  const [isCheckingUsername, setIsCheckingUsername] = useState(false);
+
+  const checkAvailability = useCallback(
+    debounce(async (uname: string) => {
+      if (uname.length < 3) {
+        setIsUsernameAvailable(null);
+        return;
+      }
+      setIsCheckingUsername(true);
+      const available = await checkUsernameAvailability(uname);
+      setIsUsernameAvailable(available);
+      setIsCheckingUsername(false);
+    }, 500),
+    [checkUsernameAvailability]
+  );
+
+  const handleUsernameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const val = e.target.value;
+    // Enforce alphanumeric only
+    if (!/^[a-zA-Z0-9]*$/.test(val)) return;
+
+    setUsername(val);
+    if (mode === 'register') {
+      checkAvailability(val);
+    }
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError('');
+    setIsLoading(true);
+
+    try {
+      if (mode === 'login') {
+        await signInWithUsername(username, password);
+      } else {
+        if (!isUsernameAvailable) {
+          setError('Username is not available');
+          setIsLoading(false);
+          return;
+        }
+        await signUpWithUsername(username, password);
+      }
+    } catch (err: any) {
+      console.error('Auth error:', err);
+      setError(err.message || 'Authentication failed');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleDiscordSignIn = async () => {
     setIsLoading(true);
     try {
       await signInWithDiscord();
@@ -45,7 +105,6 @@ export function LoginScreen() {
       <div className="relative z-10 w-full max-w-md p-6 mx-4">
         {/* Logo & Branding */}
         <div className="text-center mb-8 slide-up">
-          {/* Logo Placeholder - Replace with your actual logo */}
           <div className="w-20 h-20 mx-auto mb-4 bg-brand-obsidian rounded-2xl flex items-center justify-center shadow-lg">
             <Image src="/ritual-logo.png" alt="Logo" width={60} height={60} className='rounded-2xl' />
           </div>
@@ -56,40 +115,102 @@ export function LoginScreen() {
           <p className="text-xl text-white/90 font-bold uppercase tracking-wide mb-2">
             {ritualConfig.project.tagline}
           </p>
-          <p className="text-white/70 font-medium">
-            Test your knowledge. Climb the leaderboard.
-          </p>
         </div>
 
         {/* Glassmorphic Card */}
         <div className="bg-white/10 backdrop-blur-xl rounded-2xl border border-white/20 p-8 shadow-2xl slide-up">
-          <h2 className="text-2xl font-black text-white mb-3 uppercase tracking-tight">
-            Get Started
+          <h2 className="text-2xl font-black text-white mb-6 uppercase tracking-tight text-center">
+            {mode === 'login' ? 'Welcome Back' : 'Create Account'}
           </h2>
-          <p className="text-white/80 mb-6 font-medium leading-relaxed">
-            Join the community learning about decentralized AI infrastructure through weekly quizzes.
-          </p>
+
+          <form onSubmit={handleSubmit} className="space-y-4 mb-6">
+            <div className="space-y-2">
+              <label className="text-xs font-bold uppercase tracking-wider text-white/80">Username</label>
+              <div className="relative">
+                <input
+                  type="text"
+                  value={username}
+                  onChange={handleUsernameChange}
+                  className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-white placeholder-white/30 focus:outline-none focus:ring-2 focus:ring-brand-mint/50 focus:border-brand-mint transition-all"
+                  placeholder="Enter username"
+                  minLength={3}
+                  required
+                />
+                {mode === 'register' && username.length >= 3 && (
+                  <div className="absolute right-3 top-1/2 -translate-y-1/2">
+                    {isCheckingUsername ? (
+                      <div className="animate-spin w-4 h-4 border-2 border-white/30 border-t-white rounded-full"></div>
+                    ) : isUsernameAvailable ? (
+                      <Check className="w-5 h-5 text-brand-mint" />
+                    ) : (
+                      <X className="w-5 h-5 text-brand-red" />
+                    )}
+                  </div>
+                )}
+              </div>
+              {mode === 'register' && username.length > 0 && !isUsernameAvailable && !isCheckingUsername && username.length >= 3 && (
+                <p className="text-xs text-brand-red font-bold">Username is taken</p>
+              )}
+            </div>
+
+            <div className="space-y-2">
+              <label className="text-xs font-bold uppercase tracking-wider text-white/80">Password</label>
+              <input
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-white placeholder-white/30 focus:outline-none focus:ring-2 focus:ring-brand-mint/50 focus:border-brand-mint transition-all"
+                placeholder="Enter password"
+                minLength={6}
+                required
+              />
+            </div>
+
+            {error && (
+              <p className="text-sm text-brand-red font-bold text-center bg-brand-red/10 py-2 rounded">
+                {error}
+              </p>
+            )}
+
+            <Button
+              variant="primary"
+              type="submit"
+              isLoading={isLoading}
+              className="w-full py-4 text-base shadow-[0_0_20px_rgba(64,255,175,0.3)]"
+            >
+              {mode === 'login' ? 'Sign In' : 'Create Account'}
+            </Button>
+          </form>
+
+          <div className="flex items-center gap-4 mb-6">
+            <div className="h-px bg-white/20 flex-1"></div>
+            <span className="text-xs font-bold text-white/40 uppercase">Or continue with</span>
+            <div className="h-px bg-white/20 flex-1"></div>
+          </div>
 
           <Button
             variant="discord"
-            onClick={handleSignIn}
-            isLoading={isLoading}
-            className="w-full flex items-center justify-center gap-3 py-4 mb-6 shadow-[0_0_20px_rgba(136,64,255,0.4)]"
+            onClick={handleDiscordSignIn}
+            type="button"
+            className="w-full flex items-center justify-center gap-3 py-3 mb-6"
           >
-            {!isLoading && <SiDiscord className="w-6 h-6" />}
-            <span className="text-base">Sign in with Discord</span>
+            <SiDiscord className="w-5 h-5" />
+            <span className="text-sm">Discord</span>
           </Button>
 
-          {/* Features */}
-          <div className="space-y-3 pt-6 border-t border-white/20">
-            {features.map(({ icon: Icon, text }) => (
-              <div key={text} className="flex items-center gap-3 text-white/90">
-                <div className="w-8 h-8 rounded-lg bg-brand-mint/20 flex items-center justify-center">
-                  <Icon className="w-4 h-4 text-brand-mint" />
-                </div>
-                <span className="font-bold text-sm uppercase tracking-wide">{text}</span>
-              </div>
-            ))}
+          <div className="text-center">
+            <button
+              type="button"
+              onClick={() => {
+                setMode(mode === 'login' ? 'register' : 'login');
+                setError('');
+                setUsername('');
+                setPassword('');
+              }}
+              className="text-brand-mint hover:text-brand-mint/80 text-sm font-bold uppercase tracking-wide transition-colors"
+            >
+              {mode === 'login' ? "Don't have an account? Sign Up" : 'Already have an account? Sign In'}
+            </button>
           </div>
         </div>
 

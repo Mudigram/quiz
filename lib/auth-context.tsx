@@ -10,6 +10,9 @@ interface AuthContextType {
   supabaseUser: SupabaseUser | null;
   loading: boolean;
   signInWithDiscord: () => Promise<void>;
+  signInWithUsername: (username: string, password: string) => Promise<void>;
+  signUpWithUsername: (username: string, password: string) => Promise<void>;
+  checkUsernameAvailability: (username: string) => Promise<boolean>;
   signOut: () => Promise<void>;
 }
 
@@ -71,7 +74,72 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
-  const createUserProfile = async (userId: string, retries = 3) => {
+  // Helper to generate synthetic email
+  const getSyntheticEmail = (username: string) => `${username.toLowerCase()}@users.ritual.internal`;
+
+  const signInWithUsername = async (username: string, password: string) => {
+    const email = getSyntheticEmail(username);
+    const { error } = await supabase.auth.signInWithPassword({
+      email,
+      password,
+    });
+
+    if (error) {
+      console.error('Error signing in:', error);
+      throw error;
+    }
+    // Auth state change listener will handle the rest
+  };
+
+  const signUpWithUsername = async (username: string, password: string) => {
+    const email = getSyntheticEmail(username);
+
+    // 1. Sign up with Supabase Auth
+    const { data: authData, error: authError } = await supabase.auth.signUp({
+      email,
+      password,
+      options: {
+        data: {
+          full_name: username, // Initially use username as full name
+          username: username,
+        },
+      },
+    });
+
+    if (authError) {
+      console.error('Error signing up:', authError);
+      throw authError;
+    }
+
+    if (!authData.user) {
+      throw new Error('No user returned from sign up');
+    }
+
+    // 2. We need to manually create the user profile if the trigger doesn't handle all fields perfectly
+    // or to ensure username is set correctly in our table
+    // The trigger will run, but we can update/ensure
+    await createUserProfile(authData.user.id, 3, { username });
+  };
+
+  const checkUsernameAvailability = async (username: string): Promise<boolean> => {
+    if (!username || username.length < 3) return false;
+
+    // Check if username exists in users table
+    const { data, error } = await supabase
+      .from('users')
+      .select('username')
+      .ilike('username', username) // Case-insensitive check
+      .maybeSingle();
+
+    if (error) {
+      console.error('Error checking username:', error);
+      return false;
+    }
+
+    return !data; // If data exists, username is taken
+  };
+
+  const createUserProfile = async (userId: string, retries = 3, extraData: { username?: string } = {}) => {
     try {
       // Get current auth user data
       const { data: { user: authUser } } = await supabase.auth.getUser();
@@ -82,37 +150,61 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         return;
       }
 
-      // Extract Discord data from user metadata
-      const discordData = authUser.user_metadata;
-      const identityData = authUser.identities?.[0]?.identity_data;
+      // Check if it's a Discord user or Email user
+      const isDiscord = authUser.app_metadata.provider === 'discord';
 
-      // Discord sends data in different fields depending on the OAuth flow
-      const discordId = discordData.provider_id || identityData?.provider_id || authUser.id;
-      const username = discordData.full_name ||
-        discordData.name ||
-        discordData.custom_claims?.global_name ||
-        identityData?.full_name ||
-        identityData?.global_name ||
-        'Discord User';
-      const avatarUrl = discordData.avatar_url ||
-        identityData?.avatar_url ||
-        `https://cdn.discordapp.com/embed/avatars/${Math.floor(Math.random() * 5)}.png`;
+      let discordId, username, avatarUrl;
 
-      console.log('Creating user profile with:', { discordId, username, avatarUrl });
+      if (isDiscord) {
+        // Extract Discord data from user metadata
+        const discordData = authUser.user_metadata;
+        const identityData = authUser.identities?.[0]?.identity_data;
+
+        discordId = discordData.provider_id || identityData?.provider_id || authUser.id;
+        username = discordData.full_name ||
+          discordData.name ||
+          discordData.custom_claims?.global_name ||
+          identityData?.full_name ||
+          identityData?.global_name ||
+          'Discord User';
+        avatarUrl = discordData.avatar_url ||
+          identityData?.avatar_url ||
+          `https://cdn.discordapp.com/embed/avatars/${Math.floor(Math.random() * 5)}.png`;
+      } else {
+        // Email/Password User
+        username = extraData.username || authUser.user_metadata.username || authUser.user_metadata.full_name || 'User';
+        // Generic avatar or generate one
+        avatarUrl = `https://api.dicebear.com/7.x/shapes/svg?seed=${username}`;
+      }
+
+      console.log('Creating user profile with:', { username, avatarUrl });
 
       // Insert user profile
       const { data: newUser, error } = await supabase
         .from('users')
         .insert({
           id: userId,
-          discord_id: discordId,
-          discord_username: username,
-          discord_avatar_url: avatarUrl,
+          discord_id: discordId, // Can be null
+          discord_username: isDiscord ? username : null,
+          username: username, // The canonical username
+          display_name: username,
+          discord_avatar_url: isDiscord ? avatarUrl : null,
+          avatar_url: avatarUrl,
         })
         .select()
         .single();
 
       if (error) {
+        // Handle constraint violation (e.g. duplicate username if not handled by checks)
+        // If profile already exists, just return it
+        if (error.code === '23505') { // Unique violation
+          // Try to fetch existing
+          const { data: existing } = await supabase.from('users').select('*').eq('id', userId).single();
+          if (existing) {
+            setUser(existing);
+            return;
+          }
+        }
         throw error;
       }
 
@@ -124,7 +216,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       if (retries > 0) {
         console.log(`Retrying user creation in 1s... (${retries} retries left)`);
         await new Promise(resolve => setTimeout(resolve, 1000));
-        await createUserProfile(userId, retries - 1);
+        await createUserProfile(userId, retries - 1, extraData);
       } else {
         setLoading(false);
       }
@@ -159,7 +251,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   return (
-    <AuthContext.Provider value={{ user, supabaseUser, loading, signInWithDiscord, signOut }}>
+    <AuthContext.Provider value={{
+      user,
+      supabaseUser,
+      loading,
+      signInWithDiscord,
+      signInWithUsername,
+      signUpWithUsername,
+      checkUsernameAvailability,
+      signOut
+    }}>
       {children}
     </AuthContext.Provider>
   );

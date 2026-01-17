@@ -35,12 +35,12 @@ export function LeaderboardTable({ entries, currentUserId }: LeaderboardTablePro
                     }`}
                 />
               </div>
-              <Avatar
-                src={entry.discord_avatar_url}
-                alt={entry.discord_username}
-                size="lg"
-                className="mx-auto mb-3"
-              />
+              <div className="font-bold text-brand-black dark:text-brand-white truncate">
+                {entry.display_name || entry.username || entry.discord_username || 'Anonymous'}
+              </div>
+              <div className="text-xs text-brand-black/60 dark:text-brand-white/60">
+                {entry.correct_answers} correct
+              </div>
               <Badge variant={getRankBadgeType(entry.rank)} className="mb-2">
                 {entry.rank === 1 ? '🥇' : entry.rank === 2 ? '🥈' : '🥉'} {entry.rank}
                 {entry.rank === 1 ? 'st' : entry.rank === 2 ? 'nd' : 'rd'}
@@ -70,9 +70,11 @@ export function LeaderboardTable({ entries, currentUserId }: LeaderboardTablePro
                 <div className="w-12 text-center">
                   <span className="font-semibold text-brand-green">{entry.rank}</span>
                 </div>
-                <Avatar src={entry.discord_avatar_url} alt={entry.discord_username} size="sm" />
+                <Avatar src={entry.avatar_url || entry.discord_avatar_url || ''} alt={entry.display_name || entry.username || entry.discord_username || 'User'} size="sm" />
                 <div className="flex-1">
-                  <div className="font-medium text-brand-black dark:text-brand-white">{entry.discord_username}</div>
+                  <div className="font-medium text-brand-black dark:text-brand-white">
+                    {entry.display_name || entry.username || entry.discord_username || 'Anonymous User'}
+                  </div>
                   <div className="text-sm text-brand-black/60 dark:text-brand-white/60">
                     {entry.correct_answers} correct • {formatTimeRemaining(entry.time_taken_seconds)}
                   </div>

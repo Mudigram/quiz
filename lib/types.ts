@@ -1,10 +1,32 @@
 // User types
 export interface User {
   id: string; // UUID from Supabase
-  discord_id: string; // Unique Discord user ID
-  discord_username: string;
-  discord_avatar_url: string;
+  discord_id?: string; // Optional now
+  discord_username?: string; // Optional now
+  discord_avatar_url?: string; // Optional now
+  username?: string; // New synthetic username
+  display_name?: string; // Generic display name
+  avatar_url?: string; // Generic avatar
   created_at: string;
+}
+
+// Flashcards
+export interface FlashcardDeck {
+  id: string;
+  title: string;
+  description: string;
+  category: string;
+  icon_name: string;
+  created_at: string;
+  card_count?: number; // Computed field
+}
+
+export interface Flashcard {
+  id: string;
+  deck_id: string;
+  front_content: string;
+  back_content: string;
+  order_index: number;
 }
 
 // Quiz types
@@ -50,8 +72,11 @@ export interface QuizAttempt {
 export interface LeaderboardEntry {
   rank: number;
   user_id: string;
-  discord_username: string;
-  discord_avatar_url: string;
+  discord_username?: string;
+  username?: string;
+  display_name?: string;
+  discord_avatar_url?: string;
+  avatar_url?: string;
   score: number;
   time_taken_seconds: number;
   correct_answers: number;

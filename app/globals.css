@@ -99,6 +99,14 @@
     box-shadow: 0 0 15px rgba(136, 64, 255, 0.4);
   }
 
+  .btn-ghost {
+    @apply bg-transparent text-brand-black dark:text-brand-white hover:bg-zinc-100 dark:hover:bg-zinc-800;
+  }
+
+  .btn-outline {
+    @apply bg-transparent border-2 border-brand-purple text-brand-purple hover:bg-brand-purple hover:text-white;
+  }
+
   .input-radio {
     @apply w-4 h-4 text-brand-mint border-brand-gray focus:ring-brand-mint;
   }
