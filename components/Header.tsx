@@ -67,7 +67,13 @@ export function Header() {
 
           <div className="flex items-center gap-4">
             <div className="flex items-center gap-2">
-              <Avatar src={user.discord_avatar_url} alt={user.discord_username} size="sm" />
+              <Avatar
+                // Tries specific avatar -> discord avatar -> empty string (safe fallback)
+                src={user.avatar_url ?? user.discord_avatar_url ?? ''}
+                // Tries display name -> username -> 'User' (safe fallback)
+                alt={user.display_name ?? user.username ?? 'User'}
+                size="lg"
+              />
               <span className="text-sm font-bold text-brand-black dark:text-brand-white">{user.discord_username}</span>
             </div>
             <Button
