@@ -78,15 +78,17 @@ export default function ProfilePage() {
                     <Card className="slide-up">
                         <div className="flex items-center gap-6">
                             <Avatar
-                                src={user.discord_avatar_url}
-                                alt={user.discord_username}
+                                src={user.avatar_url ?? user.discord_avatar_url ?? ''}
+                                alt={user.display_name ?? user.username ?? 'User'}
                                 size="lg"
                             />
                             <div className="flex-1">
                                 <h2 className="text-2xl font-black text-brand-black dark:text-brand-white mb-1 uppercase tracking-tight">
-                                    {user.discord_username}
+                                    {user.display_name ?? user.username ?? 'User'}
                                 </h2>
-                                <Badge variant="gold">Discord Member</Badge>
+                                {user.discord_id && (
+                                    <Badge variant="gold">Discord Member</Badge>
+                                )}
                             </div>
                         </div>
                     </Card>
