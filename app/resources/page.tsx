@@ -66,6 +66,8 @@ export default function ResourcesPage() {
                         </p>
                     </div>
 
+                    <LearningResources />
+
                     <div className="grid gap-4 md:grid-cols-2">
                         {resources.map((resource) => {
                             const Icon = typeIcons[resource.type as keyof typeof typeIcons] || FileText;
@@ -73,7 +75,7 @@ export default function ResourcesPage() {
                             return (
 
                                 <div>
-                                    <LearningResources />
+
                                     <Link href={resource.url} key={resource.id} className="block group">
                                         <Card className={`h-full transition-all duration-300 hover:shadow-lg hover:-translate-y-1 ${resource.featured ? 'border-brand-mint/50 dark:border-brand-mint/30' : ''}`}>
                                             <div className="flex flex-col h-full">
