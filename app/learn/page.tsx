@@ -16,7 +16,13 @@ export default function LearnPage() {
                 .order('created_at', { ascending: false });
 
             if (error) throw error;
-            return data as FlashcardDeck[];
+            if (error) throw error;
+
+            // Transform the data to flatten card_count
+            return (data || []).map((deck: any) => ({
+                ...deck,
+                card_count: deck.card_count?.[0]?.count ?? 0
+            })) as FlashcardDeck[];
         },
     });
 
