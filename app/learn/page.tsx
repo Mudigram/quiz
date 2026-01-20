@@ -12,7 +12,7 @@ export default function LearnPage() {
         queryFn: async () => {
             const { data, error } = await supabase
                 .from('flashcard_decks')
-                .select('*')
+                .select('*, card_count:flashcards(count)')
                 .order('created_at', { ascending: false });
 
             if (error) throw error;
